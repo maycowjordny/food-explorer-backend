@@ -1,5 +1,5 @@
 
-exports.up = knex.schema.createTable('USERS', table => {
+exports.up = knex => knex.schema.createTable('USERS', table => {
     table.increments('id').primary()
     table.text('name').notNullable()
     table.text('email').unique().notNullable()
@@ -13,4 +13,4 @@ exports.up = knex.schema.createTable('USERS', table => {
 
 
 
-exports.down = knex.schema.dropTable('USERS')
+exports.down = knex => knex.schema.dropTable('USERS')

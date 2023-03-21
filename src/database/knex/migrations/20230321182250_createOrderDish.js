@@ -1,11 +1,11 @@
 
-exports.up = knex.schema.createTable('ORDER_DISH', table => {
+exports.up = knex => knex.schema.createTable('ORDER_DISH', table => {
     table.increments('id').primary()
-    table.text('order_id').references('id').inTable('ORDER')
-    table.text('dish_id').references('id').inTable('DISH')
-    table.text('quantity').notnullable()
+    table.integer('order_id').references('id').inTable('ORDER')
+    table.integer('dish_id').references('id').inTable('DISH')
+    table.text('quantity').notNullable()
 
 })
 
 
-exports.down = knex.schema.dropTable('ORDER_DISH')
+exports.down = knex => knex.schema.dropTable('ORDER_DISH')
