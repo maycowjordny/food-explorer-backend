@@ -24,44 +24,54 @@ class UsersController {
 
     async update(request, response) {
         const { name, email, password, old_password } = request.body
-        const userId = request.user.id
+        const { id } = request.params
+
         try {
 
-            const checkUserExist = await knex('USERS').where({ id: userId })
+            const user = await knex('USERS').where({ id }).first()
+            console.log(user.password)
 
-            if (!checkUserExist) {
+            if (!user) {
                 throw new AppError("Usuário não encontrado")
             }
 
-            const userWithUpdatedEmail = await knex('USERS').where({ email })
+            const userWithUpdatedEmail = await knex('USERS').where({ email }).first()
 
-            if (userWithUpdatedEmail && userWithUpdatedEmail.id !== checkUserExist.id) {
+            if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
                 throw new AppError("Este e-mail já está em uso.")
             }
 
+            user.name = name ?? user.name
+            user.email = email ?? user.email
 
+            if (password && !old_password) {
+                throw new AppError("Você precisa informar a senha antiga para definir a nova senha.")
+            }
 
+            if (password && old_password) {
+                const checkOldPassword = await compare(old_password, user.password)
+                if (!checkOldPassword) {
+                    throw new AppError("Senha antiga está incorreta.")
+                }
+
+                user.password = await hash(password, 12)
+            }
+
+            await knex('USERS').where({ id }).update({
+                name: user.name,
+                email: user.email,
+                password: user.password,
+                updated_at: knex.fn.now()
+            })
+
+            return response.status(200).json({ message: 'Usuário atualizado com sucesso!' })
 
         } catch (error) {
-            console.log(error)
 
-            return response.status(500).json({ error: "Erro ao atualizar o usuário" })
+            return response.status(500).json({ error: "Erro ao atualizar o usuário." })
         }
 
-
-
-
-
-
-
-
-
-
     }
-
-
-
-
 }
 
 module.exports = UsersController
