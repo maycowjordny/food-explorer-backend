@@ -3,31 +3,32 @@ const AppError = require("../utils/AppError")
 const authConfig = require("../configs/authConfig")
 
 function ensureAuthenticated(shouldIsAdmin) {
-
     return function (request, response, next) {
-        const authHeader = request.headers.authorization;
+        const authHead = request.headers.authorization
 
-        if (!authHeader) {
-            throw new AppError("JWT Token uninformed", 401);
+        if (!authHead) {
+            throw new AppError("JWT token não informado", 401)
         }
 
-        const [, token] = authHeader.split(" ");
+        const [, token] = authHead.split(" ")
 
         try {
-            const { user_id, is_admin } = verify(token, authConfig.jwt.secret);
+            const { is_admin, user_id } = verify(token, authConfig.jwt.secret)
 
             if (shouldIsAdmin && !Boolean(is_admin)) {
-                return response.status(403).json({ message: "Você não tem permissão para acessar esse recurso" })
+                return response.status(403).json({ message: "Você não pode acessar esse recurso." })
             }
 
             request.user = {
                 id: Number(user_id)
             }
 
-            return next();
+            return next()
+
         } catch {
-            throw new AppError("JWT Token invalid", 401);
+            throw new AppError("JWT token inválido", 401)
         }
     }
+
 }
 module.exports = ensureAuthenticated;

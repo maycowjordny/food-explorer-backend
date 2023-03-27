@@ -4,32 +4,40 @@ const knex = require('../database/knex')
 
 class UsersController {
     async create(request, response) {
-        const { name, email, password } = request.body
 
-        const hashedPassword = await hash(password, 12)
+        try {
+            const { name, email, password } = request.body
 
-        const checkEmailExist = await knex('USERS').where({ email }).first()
-        if (checkEmailExist) {
-            throw new AppError("E-mail já está sendo utilizado.")
+            const hashedPassword = await hash(password, 12)
+
+
+            const checkEmailExist = await knex('USERS').where({ email }).first()
+            if (checkEmailExist) {
+                throw new AppError("E-mail já está sendo utilizado.")
+            }
+
+            await knex('USERS').insert({
+                name,
+                email,
+                password: hashedPassword,
+            })
+
+            return response.status(201).json({ message: 'Usuário criado com sucesso!' })
+
+        } catch (error) {
+            throw new AppError(error.message, 500)
+
         }
-
-        await knex('USERS').insert({
-            name,
-            email,
-            password: hashedPassword,
-        })
-
-        return response.status(201).json({ message: 'Usuário criado com sucesso!' })
     }
 
     async update(request, response) {
-        const { name, email, password, old_password } = request.body
-        const { id } = request.params
 
         try {
+            const { name, email, password, old_password } = request.body
+            const id = request.user.id
 
             const user = await knex('USERS').where({ id }).first()
-            console.log(user.password)
+
 
             if (!user) {
                 throw new AppError("Usuário não encontrado")
@@ -40,6 +48,7 @@ class UsersController {
             if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
                 throw new AppError("Este e-mail já está em uso.")
             }
+
 
             user.name = name ?? user.name
             user.email = email ?? user.email
@@ -68,10 +77,11 @@ class UsersController {
 
         } catch (error) {
 
-            return response.status(500).json({ error: "Erro ao atualizar o usuário." })
+            throw new AppError(error.message, 500)
         }
 
     }
+
 }
 
 module.exports = UsersController
