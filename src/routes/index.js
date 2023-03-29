@@ -9,6 +9,6 @@ const routes = Router()
 routes.use("/users", usersRouter)
 routes.use("/sessions", sessionsRoutes)
 routes.use("/ingredients", ingredientsRoutes)
-routes.use("/dish", dishRoutes)
+routes.use("/dishes", dishRoutes)
 
 module.exports = routes

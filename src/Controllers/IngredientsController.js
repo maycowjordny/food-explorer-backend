@@ -2,11 +2,10 @@ const knex = require("../database/knex")
 
 class IngredientsController {
     async index(request, response) {
-        const dish_id = request.params.id
-        console.log(dish_id)
+
         try {
-            const ingredients = await knex('INGREDIENT')
-                .where({ dish_id })
+            const dish_id = request.params.id
+            const ingredients = await knex('INGREDIENT').where({ dish_id })
 
             return response.json(ingredients)
         } catch (error) {

@@ -1,5 +1,5 @@
 
-exports.up = knex => knex.schema.createTable('CATEGORY', table => {
+exports.up = knex => knex.schema.createTable("CATEGORY", table => {
     table.increments('id').primary()
     table.text('name').unique()
     table.timestamp('created_at').default(knex.fn.now())
