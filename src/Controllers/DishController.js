@@ -1,4 +1,3 @@
-const { Knex } = require("knex");
 const knex = require("../database/knex");
 const AppError = require("../utils/AppError");
 
@@ -24,7 +23,7 @@ class DishController {
                 await knex("INGREDIENT").insert(addIngredients)
             });
 
-            return response.status(200).json({ message: "Prato criado com sucesso" });
+            return response.status(200).json({ message: "Prato criado com sucesso." });
 
         } catch (error) {
 
@@ -52,7 +51,7 @@ class DishController {
 
             await knex("DISH").where({ id: id }).delete();
 
-            return response.json({ message: "Prato deletado" })
+            return response.json({ message: "Prato deletado com sucesso." })
 
         } catch (error) {
             throw new AppError(error.message, 500)
@@ -64,27 +63,32 @@ class DishController {
             const dishID = request.params.id
             const { name, description, category_id, price, image, ingredients } = request.body
 
-            await knex("DISH").where({ id: dishID }).update({
-                name,
-                description,
-                category_id,
-                price,
-                image,
-                updated_at: knex.fn.now()
+            await knex.transaction(async trx => {
+
+                await trx("DISH").where({ id: dishID }).update({
+                    name,
+                    description,
+                    category_id,
+                    price,
+                    image,
+                    updated_at: knex.fn.now()
+                })
+
+                await trx("INGREDIENT").where({ dish_id: dishID }).delete()
+
+                const updateIngredients = ingredients.map(ingredient => {
+                    return {
+                        dish_id: dishID,
+                        name: ingredient
+                    }
+                })
+
+                await trx("INGREDIENT").insert(updateIngredients)
+
             })
 
-            await knex("INGREDIENT").where({ dish_id: dishID }).delete()
 
-            const updateIngredients = ingredients.map(ingredient => {
-                return {
-                    dish_id: dishID,
-                    name: ingredient
-                }
-            })
-
-            await knex("INGREDIENT").insert(updateIngredients)
-
-            return response.json("Prato atualizado ")
+            return response.json({ message: "Prato atualizado com sucesso." })
 
         } catch (error) {
             throw new AppError(error.message)

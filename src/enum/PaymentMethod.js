@@ -1,7 +1,6 @@
-const paymentMethod = Object.freeze({
-    CREDIT_CARD: "Cartao de credito",
+const paymentMethod = {
+    CREDIT_CARD: "Cartão de crédito",
     PIX: "Pix",
-});
-
+}
 
 module.exports = paymentMethod
