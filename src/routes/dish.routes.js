@@ -10,6 +10,7 @@ const dishRouter = Router()
 dishRouter.post("/", ensureAuthenticated(true), dishController.create)
 dishRouter.get("/:id", ensureAuthenticated(false), dishController.show)
 dishRouter.delete("/:id", ensureAuthenticated(true), dishController.delete)
+dishRouter.put("/:id", ensureAuthenticated(true), dishController.updtade)
 
 module.exports = dishRouter
 

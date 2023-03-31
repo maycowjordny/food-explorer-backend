@@ -59,6 +59,38 @@ class DishController {
         }
     }
 
+    async updtade(request, response) {
+        try {
+            const dishID = request.params.id
+            const { name, description, category_id, price, image, ingredients } = request.body
+
+            await knex("DISH").where({ id: dishID }).update({
+                name,
+                description,
+                category_id,
+                price,
+                image,
+                updated_at: knex.fn.now()
+            })
+
+            await knex("INGREDIENT").where({ dish_id: dishID }).delete()
+
+            const updateIngredients = ingredients.map(ingredient => {
+                return {
+                    dish_id: dishID,
+                    name: ingredient
+                }
+            })
+
+            await knex("INGREDIENT").insert(updateIngredients)
+
+            return response.json("Prato atualizado ")
+
+        } catch (error) {
+            throw new AppError(error.message)
+        }
+    }
+
 }
 
 module.exports = DishController
