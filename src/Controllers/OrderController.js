@@ -21,12 +21,12 @@ class OrderController {
 
             await Promise.all(orders.map(async order => {
 
-                const orderlist = await knex("ORDER_DISH as OD")
+                const orderList = await knex("ORDER_DISH as OD")
                     .select(['D.price', 'OD.quantity'])
                     .innerJoin("DISH as D", "D.id", "OD.dish_id")
                     .where({ order_id: order.id })
 
-                const orderTotal = orderlist.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
+                const orderTotal = orderList.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
 
                 const [order_id] = await knex("ORDER").insert({
                     user_id: user_id,
