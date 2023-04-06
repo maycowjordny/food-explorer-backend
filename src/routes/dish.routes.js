@@ -15,6 +15,7 @@ dishRouter.post("/", ensureAuthenticated(true), upload.single("image"), dishCont
 dishRouter.get("/:id", ensureAuthenticated(false), dishController.show)
 dishRouter.delete("/:id", ensureAuthenticated(true), dishController.delete)
 dishRouter.put("/:id", ensureAuthenticated(true), upload.single("image"), dishController.update)
+dishRouter.get("/", ensureAuthenticated(false), dishController.index)
 
 module.exports = dishRouter
 

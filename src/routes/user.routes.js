@@ -12,6 +12,7 @@ const upload = multer(uploadConfig.MULTER_DISH)
 
 userRoutes.post("/", upload.single("avatar"), usersController.create)
 userRoutes.put("/", ensureAuthenticated(false), upload.single("avatar"), usersController.update)
+userRoutes.get("/", ensureAuthenticated(true), usersController.index)
 
 
 module.exports = userRoutes

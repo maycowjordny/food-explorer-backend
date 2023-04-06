@@ -7,7 +7,7 @@ class DishController {
         try {
 
             const { name, description, category_id, price, ingredients } = request.body;
-            const imageDish = request.file.filename
+            const imageDish = request.file ? request.file.filename : null;
 
             await knex("DISH").insert({
                 name,
@@ -69,16 +69,16 @@ class DishController {
             const { name, description, category_id, price, ingredients } = request.body
             const imageDish = request.file.filename
 
-            const diskstorage = new DiskStorage()
+            const diskStorage = new DiskStorage()
 
             const dish = await knex("DISH").where({ id: dishID }).first()
 
             if (!dish) {
-                throw new AppError("Prato não encontrado", 404)
+                throw new AppError("Prato não encontrado", 404);
             }
 
-            if (dish.image) {
-                await diskstorage.deleteFile(dish.image)
+            if (dish.image && imageDish != null) {
+                await diskStorage.deleteFile(dish.image);
             }
 
             await knex.transaction(async trx => {
@@ -88,7 +88,7 @@ class DishController {
                     description,
                     category_id,
                     price,
-                    image: imageDish,
+                    image: imageDish ? imageDish : dish.image,
                     updated_at: knex.fn.now()
                 })
 
@@ -112,6 +112,33 @@ class DishController {
         } catch (error) {
             throw new AppError(error.message)
         }
+    }
+
+    async index(request, response) {
+
+        try {
+            const { name, ingredient } = request.query
+
+            let dishes = await knex("DISH as d")
+                .select([
+                    "d.id",
+                    "d.name",
+                    "d.description",
+                    "d.category_id",
+                    "d.image",
+                    "d.price"
+                ])
+                .distinct()
+                .whereLike('d.name', `%${name}%`)
+                .orWhereLike('I.name', `%${ingredient}%`)
+                .leftJoin('INGREDIENT as I', 'D.id', 'I.dish_id')
+                .orderBy('d.name')
+
+            return response.json(dishes)
+        } catch (error) {
+            throw new AppError(error.message)
+        }
+
     }
 
 }

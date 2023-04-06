@@ -86,6 +86,26 @@ class UsersController {
 
     }
 
+    async index(request, response) {
+
+        const { startDate, endDate } = request.query;
+
+        const orders = await knex("ORDER").whereBetween("ORDER.created_at", [startDate, endDate])
+
+        await Promise.all(orders.map(async order => {
+            const dishes = await knex("ORDER_DISH as OD")
+                .select("D.name", "OD.quantity")
+                .innerJoin("DISH as D", "D.id", "OD.dish_id")
+                .where({ order_id: order.id })
+
+            order.dishes = dishes;
+
+        }))
+
+        return response.status(200).json({ orders });
+
+    }
+
 }
 
 module.exports = UsersController
