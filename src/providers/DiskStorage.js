@@ -4,8 +4,8 @@ const configsUpload = require("../configs/upload")
 
 class DiskStorage {
     async deleteFile(file) {
-        const pathAvatar = path.resolve(configsUpload.UPLOADS_AVATAR)
-        const pathDish = path.resolve(configsUpload.UPLOADS_DISH_IMAGES)
+        const pathAvatar = path.resolve(configsUpload.UPLOADS_AVATAR, file)
+        const pathDish = path.resolve(configsUpload.UPLOADS_DISH_IMAGES, file)
 
         if (fs.existsSync(pathAvatar)) {
             await fs.promises.unlink(pathAvatar);

@@ -7,6 +7,7 @@ class UsersController {
 
         try {
             const { name, email, password } = request.body
+            const avatarImage = request.file.filename
 
             const hashedPassword = await hash(password, 12)
 
@@ -20,6 +21,7 @@ class UsersController {
                 name,
                 email,
                 password: hashedPassword,
+                avatar: avatarImage
             })
 
             return response.status(201).json({ message: 'Usuário criado com sucesso!' })
@@ -34,6 +36,7 @@ class UsersController {
 
         try {
             const { name, email, password, old_password } = request.body
+            const avatarImage = request.file.filename
             const id = request.user.id
 
             const user = await knex('USERS').where({ id }).first()
@@ -70,6 +73,7 @@ class UsersController {
                 name: user.name,
                 email: user.email,
                 password: user.password,
+                avatar: avatarImage,
                 updated_at: knex.fn.now()
             })
 
