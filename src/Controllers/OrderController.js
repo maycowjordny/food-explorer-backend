@@ -19,32 +19,33 @@ class OrderController {
                 .select(['ORDER.id', 'ORDER.user_id', 'ORDER.amount'])
                 .where({ user_id: user_id })
 
+            let orderList;
+
             await Promise.all(orders.map(async order => {
 
-                const orderList = await knex("ORDER_DISH as OD")
+                orderList = await knex("ORDER_DISH as OD")
                     .select(['D.price', 'OD.quantity'])
                     .innerJoin("DISH as D", "D.id", "OD.dish_id")
                     .where({ order_id: order.id })
 
-                const orderTotal = orderList.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
-
-                const [order_id] = await knex("ORDER").insert({
-                    user_id: user_id,
-                    payment,
-                    amount: orderTotal,
-                    status: orderStatus.PENDING
-                })
-
-                for (const dish of dishes) {
-                    await knex("ORDER_DISH").insert({
-                        order_id,
-                        dish_id: dish.id,
-                        quantity: dish.quantity
-                    })
-                }
-
             }))
 
+            const orderTotal = orderList.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
+
+            const [order_id] = await knex("ORDER").insert({
+                user_id: user_id,
+                payment,
+                amount: orderTotal,
+                status: orderStatus.PENDING
+            })
+
+            for (const dish of dishes) {
+                await knex("ORDER_DISH").insert({
+                    order_id,
+                    dish_id: dish.id,
+                    quantity: dish.quantity
+                })
+            }
             return response.json({ message: "Pedido criado com sucesso." })
 
         } catch (error) {

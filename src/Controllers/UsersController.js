@@ -8,7 +8,6 @@ class UsersController {
 
         try {
             const { name, email, password } = request.body
-            const avatarImage = request.file.filename
 
             const hashedPassword = await hash(password, 12)
 
@@ -24,8 +23,7 @@ class UsersController {
             await userRepository.create({
                 name,
                 email,
-                password: hashedPassword,
-                avatar: avatarImage
+                password: hashedPassword
             })
 
             return response.status(201).json({ message: 'Usuário criado com sucesso!' })

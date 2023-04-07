@@ -8,9 +8,9 @@ const userRoutes = Router()
 
 const usersController = new UsersController()
 
-const upload = multer(uploadConfig.MULTER_DISH)
+const upload = multer(uploadConfig.MULTER_AVATAR)
 
-userRoutes.post("/", upload.single("avatar"), usersController.create)
+userRoutes.post("/", usersController.create)
 userRoutes.put("/", ensureAuthenticated(false), upload.single("avatar"), usersController.update)
 userRoutes.get("/", ensureAuthenticated(true), usersController.index)
 

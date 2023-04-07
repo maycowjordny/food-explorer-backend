@@ -8,13 +8,12 @@ class UserRepository {
         return userEmail
     }
 
-    async create({ name, email, password: hashedPassword, avatar: avatarImage }) {
+    async create({ name, email, password: hashedPassword }) {
 
         const createUser = await knex('USERS').insert({
             name,
             email,
-            password: hashedPassword,
-            avatar: avatarImage
+            password: hashedPassword
         })
 
         return { id: createUser }
@@ -37,11 +36,6 @@ class UserRepository {
         return { id: updateUserId }
 
     }
-
-
-
-
 }
-
 
 module.exports = UserRepository
