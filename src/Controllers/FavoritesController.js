@@ -71,7 +71,7 @@ class FavoritesController {
                 .select('D.*')
                 .where({ user_id: userId })
 
-            return response.json({ favorites })
+            return response.json(favorites)
 
         } catch (error) {
             throw new AppError(error.message)

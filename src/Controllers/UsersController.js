@@ -1,6 +1,7 @@
 const AppError = require("../utils/AppError")
 const { hash, compare } = require("bcryptjs")
 const knex = require('../database/knex')
+const UserRepository = require("../repositories/user/userRepository")
 
 class UsersController {
     async create(request, response) {
@@ -11,13 +12,16 @@ class UsersController {
 
             const hashedPassword = await hash(password, 12)
 
+            const userRepository = new UserRepository()
 
-            const checkEmailExist = await knex('USERS').where({ email }).first()
+            const checkEmailExist = await userRepository.findByEmail(email)
+
+
             if (checkEmailExist) {
                 throw new AppError("E-mail já está sendo utilizado.")
             }
 
-            await knex('USERS').insert({
+            await userRepository.create({
                 name,
                 email,
                 password: hashedPassword,
@@ -39,6 +43,8 @@ class UsersController {
             const avatarImage = request.file.filename
             const id = request.user.id
 
+            const userRepository = new UserRepository()
+
             const user = await knex('USERS').where({ id }).first()
 
 
@@ -46,7 +52,7 @@ class UsersController {
                 throw new AppError("Usuário não encontrado")
             }
 
-            const userWithUpdatedEmail = await knex('USERS').where({ email }).first()
+            const userWithUpdatedEmail = await userRepository.findByEmail(email)
 
             if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
                 throw new AppError("Este e-mail já está em uso.")
@@ -68,14 +74,15 @@ class UsersController {
 
                 user.password = await hash(password, 12)
             }
-
-            await knex('USERS').where({ id }).update({
-                name: user.name,
-                email: user.email,
-                password: user.password,
-                avatar: avatarImage,
-                updated_at: knex.fn.now()
-            })
+            await userRepository
+                .update({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    avatar: avatarImage,
+                    password: user.password,
+                    updated_at: knex.fn.now()
+                })
 
             return response.status(200).json({ message: 'Usuário atualizado com sucesso!' })
 

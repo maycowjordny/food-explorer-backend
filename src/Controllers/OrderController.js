@@ -68,7 +68,7 @@ class OrderController {
                 order.dishes = dishes
 
             }))
-            return response.json({ order })
+            return response.json(order)
 
         } catch (error) {
 
