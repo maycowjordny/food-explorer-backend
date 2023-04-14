@@ -11,39 +11,54 @@ class OrderController {
             const { dishes } = request.body
             let orderList = []
 
-            const [order_id] = await knex("ORDER").insert({
-                user_id: user_id,
-                payment: null,
-                amount: 0,
-                status: orderStatus.PENDING
-            })
 
-            for (const dish of dishes) {
-                await knex("ORDER_DISH").insert({
-                    order_id,
-                    dish_id: dish.id,
-                    quantity: dish.quantity
+            const checkOrderStatus = await knex("ORDER")
+                .select(['ORDER.id', 'ORDER.user_id', 'ORDER.status'])
+                .where({ status: orderStatus.PENDING })
+
+
+            if (!checkOrderStatus.length) {
+
+                const [order_id] = await knex("ORDER").insert({
+                    user_id: user_id,
+                    payment: null,
+                    amount: 0,
+                    status: orderStatus.PENDING
                 })
+
+                for (const dish of dishes) {
+                    await knex("ORDER_DISH").insert({
+                        order_id,
+                        dish_id: dish.id,
+                        quantity: dish.quantity
+                    })
+                }
+
+                const orders = await knex("ORDER")
+                    .select(['ORDER.id', 'ORDER.user_id', 'ORDER.amount'])
+                    .where({ user_id: user_id })
+
+                await Promise.all(orders.map(async order => {
+
+                    orderList = await knex("ORDER_DISH as OD")
+                        .select(['D.price', 'OD.quantity'])
+                        .innerJoin("DISH as D", "D.id", "OD.dish_id")
+                        .where({ order_id: order.id })
+
+                }))
+
+                const orderTotal = orderList.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
+
+                await knex("ORDER").update({ amount: orderTotal }).where({ user_id: user_id }).where({ id: order_id })
+
+                return response.json({ message: "Pedido criado com sucesso." })
+
+
+            } else {
+                //TODO
             }
 
-            const orders = await knex("ORDER")
-                .select(['ORDER.id', 'ORDER.user_id', 'ORDER.amount'])
-                .where({ user_id: user_id })
 
-            await Promise.all(orders.map(async order => {
-
-                orderList = await knex("ORDER_DISH as OD")
-                    .select(['D.price', 'OD.quantity'])
-                    .innerJoin("DISH as D", "D.id", "OD.dish_id")
-                    .where({ order_id: order.id })
-
-            }))
-
-            const orderTotal = orderList.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
-
-            await knex("ORDER").update({ amount: orderTotal }).where({ user_id: user_id }).where({ id: order_id })
-
-            return response.json({ message: "Pedido criado com sucesso." })
 
         } catch (error) {
             throw new AppError(error.message)
