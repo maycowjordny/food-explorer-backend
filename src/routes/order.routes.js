@@ -9,5 +9,7 @@ const orderController = new OrderController()
 orderRoutes.post("/", ensureAuthenticated(false), orderController.create)
 orderRoutes.get("/", ensureAuthenticated(false), orderController.index)
 orderRoutes.patch("/:id", ensureAuthenticated(true), orderController.updateStatus)
+orderRoutes.put("/:id", ensureAuthenticated(false), orderController.updateOrder)
+
 
 module.exports = orderRoutes
