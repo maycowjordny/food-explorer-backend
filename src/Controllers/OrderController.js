@@ -55,10 +55,44 @@ class OrderController {
 
 
             } else {
-                //TODO
+                const orderId = ordersExists[0].id;
+
+                for (const dish of dishes) {
+                    const existingOrderDish = await knex("ORDER_DISH")
+                        .select("quantity")
+                        .where({ order_id: orderId })
+                        .andWhere({ dish_id: dish.id })
+                        .first();
+
+                    if (existingOrderDish) {
+                        const newQuantity = Number(existingOrderDish.quantity) + Number(dish.quantity);
+                        await knex("ORDER_DISH")
+                            .where({ order_id: orderId })
+                            .andWhere({ dish_id: dish.id })
+                            .update({ quantity: newQuantity });
+                    } else {
+                        await knex("ORDER_DISH").insert({
+                            order_id: orderId,
+                            dish_id: dish.id,
+                            quantity: dish.quantity,
+                        });
+                    }
+                }
+
+                const orderDishes = await knex("ORDER_DISH")
+                    .select(['DISH.price', 'ORDER_DISH.quantity'])
+                    .innerJoin("DISH", "DISH.id", "ORDER_DISH.dish_id")
+                    .where({ order_id: orderId })
+
+                let orderTotal = 0;
+
+
+                orderTotal = orderDishes.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
+
+                await knex("ORDER").where({ id: orderId }).update({ amount: total })
+
+                return response.json({ message: "Pedido atualizado com sucesso!" });
             }
-
-
 
         } catch (error) {
             throw new AppError(error.message)
@@ -145,6 +179,25 @@ class OrderController {
 
 
         } catch (error) {
+            throw new AppError(error.message, 500);
+        }
+    }
+
+    async updatePaymentMethod(request, response) {
+        const orderId = request.params.id;
+        const { payment } = request.body;
+
+        try {
+            if (!Object.values(paymentMethod).includes(payment)) {
+
+                return response.status(400).json({ message: "Metodo de pagamento inválido" });
+            }
+
+            await knex("ORDER").update({ payment, updated_at: knex.fn.now() }).where({ id: orderId })
+
+            return response.status(200).json({ message: "Metodo de pagamento atualizado com sucesso" })
+        } catch (error) {
+
             throw new AppError(error.message, 500);
         }
     }
