@@ -9,6 +9,7 @@ const orderController = new OrderController()
 orderRoutes.post("/", ensureAuthenticated(false), orderController.create)
 orderRoutes.get("/", ensureAuthenticated(false), orderController.index)
 orderRoutes.patch("/:id", ensureAuthenticated(true), orderController.updateStatus)
+orderRoutes.patch("/:id/payment", ensureAuthenticated(false), orderController.updatePaymentMethod);
 orderRoutes.put("/:id", ensureAuthenticated(false), orderController.updateOrder)
 
 
