@@ -109,7 +109,7 @@ class OrderController {
 
                 const dishes = await knex('ORDER_DISH as OD')
                     .innerJoin('DISH as D', 'D.id', 'OD.dish_id')
-                    .select('D.name', 'OD.quantity', 'D.price')
+                    .select('D.name', 'OD.quantity', 'D.price', 'D.image')
                     .where({ order_id: order.id })
 
                 order.dishes = dishes
