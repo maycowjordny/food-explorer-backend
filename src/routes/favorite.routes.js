@@ -1,4 +1,4 @@
-const Router = require("express")
+const { Router } = require("express")
 
 const FavoritesController = require("../Controllers/FavoritesController")
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated")
