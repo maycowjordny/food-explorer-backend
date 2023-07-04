@@ -188,6 +188,10 @@ class OrderController {
             const orderId = request.params.id;
             const { dishes } = request.body;
 
+            if (!orderId || !dishes || !Array.isArray(dishes) || dishes.length === 0) {
+                return response.status(400).json({ message: "Parâmetros inválidos." });
+            }
+
             const order = await knex("ORDER")
                 .where({
                     id: orderId,
@@ -221,7 +225,7 @@ class OrderController {
             const orderDishes = await knex("ORDER_DISH")
                 .select(['DISH.price', 'ORDER_DISH.quantity'])
                 .innerJoin("DISH", "DISH.id", "ORDER_DISH.dish_id")
-                .where({ order_id: orderId })
+                .where({ order_id: orderId });
 
             let total = 0;
 
@@ -229,15 +233,19 @@ class OrderController {
                 total += dish.price * dish.quantity;
             }
 
-            await knex("ORDER").where({ id: orderId }).update({
-                amount: total,
-            });
+            await knex("ORDER")
+                .where({ id: orderId })
+                .update({
+                    amount: total,
+                });
 
-            return response.status(200).json({ message: "Prato removido com sucesso" });
+            return response.status(200).json({ message: "Prato removido com sucesso." });
         } catch (error) {
-            throw new AppError(error.message, 500);
+            console.error(error);
+            return response.status(500).json({ message: "Ocorreu um erro no servidor." });
         }
     }
+
 
     async updatePaymentMethod(request, response) {
         const orderId = request.params.id;

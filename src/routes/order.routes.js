@@ -11,6 +11,7 @@ orderRoutes.get("/:id", ensureAuthenticated(false), orderController.index)
 orderRoutes.patch("/:id", ensureAuthenticated(true), orderController.updateStatus)
 orderRoutes.patch("/:id/payment", ensureAuthenticated(false), orderController.updatePaymentMethod);
 orderRoutes.put("/:id", ensureAuthenticated(false), orderController.updateOrder)
+orderRoutes.delete("/:id", ensureAuthenticated(false), orderController.removeDishOrder);
 
 
 module.exports = orderRoutes
