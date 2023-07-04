@@ -48,10 +48,10 @@ class FavoritesController {
                 throw new AppError("Este prato não está nos seus favoritos.")
             }
 
-            await knex("FAVORITE").delete({
+            await knex("FAVORITE").where({
                 user_id: userId,
                 dish_id: dish_id
-            })
+            }).delete()
 
             return response.json({ message: "Prato foi removido dos seus favoritos" })
 
@@ -68,8 +68,8 @@ class FavoritesController {
 
             const favorites = await knex("FAVORITE as FV")
                 .innerJoin('DISH as D', 'D.id', 'FV.dish_id')
-                .select('D.*')
-                .where({ user_id: userId })
+                .select('D.*', 'D.id')
+                .where({ "FV.user_id": userId })
 
             return response.json(favorites)
 
