@@ -40,10 +40,13 @@ class DishController {
     async show(request, response) {
         try {
             const { id } = request.params
-            const ingredients = await knex("INGREDIENT").where({ id }).orderBy("name")
             const dish = await knex("DISH").where({ id }).first()
+            const ingredients = await knex("INGREDIENT").where({ dish_id: id }).orderBy("name")
 
-            return response.json({ dish, ingredients })
+            return response.json({
+                ...dish,
+                ingredients
+            })
 
         } catch (error) {
             throw new AppError(error.message, 500)
@@ -117,7 +120,7 @@ class DishController {
     async index(request, response) {
 
         try {
-            const { name, ingredient } = request.query
+            const { name, ingredients } = request.query
             const userId = request.user.id
 
             let dishes = await knex("DISH as d")
@@ -132,7 +135,7 @@ class DishController {
                 ])
                 .distinct()
                 .whereLike('d.name', `%${name}%`)
-                .orWhereLike('I.name', `%${ingredient}%`)
+                .orWhereLike('I.name', `%${ingredients}%`)
                 .leftJoin('INGREDIENT as I', 'D.id', 'I.dish_id')
                 .leftJoin("FAVORITE as f", function () {
                     this.on("d.id", "=", "f.dish_id")
