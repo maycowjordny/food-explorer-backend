@@ -1,5 +1,5 @@
 const AppError = require("../utils/AppError")
-const { hash, compare } = require("bcryptjs")
+const bcrypt = require('bcryptjs');
 const knex = require('../database/knex')
 const UserRepository = require("../repositories/user/userRepository")
 
@@ -38,7 +38,6 @@ class UsersController {
 
         try {
             const { name, email, password, old_password } = request.body
-            const avatarImage = request.file.filename
             const id = request.user.id
 
             const userRepository = new UserRepository()
@@ -65,19 +64,19 @@ class UsersController {
             }
 
             if (password && old_password) {
-                const checkOldPassword = await compare(old_password, user.password)
+                const checkOldPassword = await bcrypt.compare(old_password, user.password)
+
                 if (!checkOldPassword) {
                     throw new AppError("Senha antiga está incorreta.")
                 }
 
-                user.password = await hash(password, 12)
+                user.password = await bcrypt.hash(password, 12)
             }
             await userRepository
                 .update({
                     id: user.id,
                     name: user.name,
                     email: user.email,
-                    avatar: avatarImage,
                     password: user.password,
                     updated_at: knex.fn.now()
                 })
