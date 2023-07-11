@@ -14,8 +14,8 @@ const upload = multer(uploadConfig.MULTER_DISH)
 dishRouter.post("/", ensureAuthenticated(true), upload.single("image"), dishController.create)
 dishRouter.get("/:id", ensureAuthenticated(false), dishController.show)
 dishRouter.delete("/:id", ensureAuthenticated(true), dishController.delete)
-dishRouter.put("/:id", ensureAuthenticated(true), upload.single("image"), dishController.update)
 dishRouter.get("/", ensureAuthenticated(false), dishController.index)
+dishRouter.put("/:id", ensureAuthenticated(true), upload.single("image"), dishController.update)
 
 module.exports = dishRouter
 
