@@ -54,23 +54,25 @@ class DishController {
     }
 
     async delete(request, response) {
+        const { id } = request.params;
+
         try {
-            const id = request.params.id
+            await knex("DISH")
+                .where({ id })
+                .delete();
 
-            await knex("DISH").where({ id: id }).delete();
-
-            return response.json({ message: "Prato deletado com sucesso." })
-
+            return response.json({ message: "Prato deletado com sucesso" });
         } catch (error) {
-            throw new AppError(error.message, 500)
+            throw new AppError(error.message, 500);
         }
     }
+
 
     async update(request, response) {
         try {
             const dishID = request.params.id
             const { name, description, category_id, price, ingredients } = request.body
-            const imageDish = request.file.filename
+            const imageDish = request.file ? request.file.filename : null;
 
             const diskStorage = new DiskStorage()
 
