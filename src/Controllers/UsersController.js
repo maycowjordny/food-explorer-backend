@@ -9,7 +9,7 @@ class UsersController {
         try {
             const { name, email, password } = request.body
 
-            const hashedPassword = await hash(password, 12)
+            const hashedPassword = await bcrypt.hash(password, 12)
 
             const userRepository = new UserRepository()
 
@@ -92,9 +92,7 @@ class UsersController {
 
     async index(request, response) {
 
-        const { startDate, endDate } = request.query;
-
-        const orders = await knex("ORDER").whereBetween("ORDER.created_at", [startDate, endDate])
+        const orders = await knex("ORDER")
 
         await Promise.all(orders.map(async order => {
             const dishes = await knex("ORDER_DISH as OD")
@@ -106,7 +104,7 @@ class UsersController {
 
         }))
 
-        return response.status(200).json({ orders });
+        return response.status(200).json(orders);
 
     }
 
