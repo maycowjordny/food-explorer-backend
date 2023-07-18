@@ -98,7 +98,6 @@ class OrderController {
         }
     }
 
-
     async index(request, response) {
         try {
             const user_id = request.user.id
@@ -108,8 +107,8 @@ class OrderController {
             await Promise.all(order.map(async order => {
 
                 const dishes = await knex('ORDER_DISH as OD')
-                    .innerJoin('DISH as D', 'D.id', 'OD.dish_id')
                     .select('D.name', 'OD.quantity', 'D.id', 'D.price', 'D.image')
+                    .innerJoin('DISH as D', 'D.id', 'OD.dish_id')
                     .where({ order_id: order.id })
 
                 order.dishes = dishes
@@ -123,62 +122,25 @@ class OrderController {
         }
     }
 
-    async updateOrder(request, response) {
+    async show(request, response) {
+        const userId = request.user.id;
+        const orderId = request.params.id;
+
         try {
-            const orderId = request.params.id;
-            const { dishes, payment } = request.body;
+            const orders = await knex("ORDER").where({ user_id: userId, id: orderId })
 
+            await Promise.all(orders.map(async order => {
+                const dishes = await knex("ORDER_DISH as OD")
+                    .select("D.id", "D.name", "OD.quantity", "D.price")
+                    .innerJoin("DISH as D", "D.id", "OD.dish_id")
+                    .where({ order_id: order.id })
 
-            for (const dish of dishes) {
-                const order_dish = await knex("ORDER_DISH")
-                    .where({
-                        order_id: orderId,
-                        dish_id: dish.id
-                    }).first()
+                order.dishes = dishes;
+            }));
 
-                await knex("ORDER_DISH")
-                    .where({
-                        order_id: orderId,
-                        dish_id: dish.id
-                    })
-                    .update({
-                        quantity:
-                            Number(dish.quantity) ?
-                                Number(dish.quantity) + Number(order_dish.quantity)
-                                :
-                                Number(order_dish.quantity)
-                    })
-            }
-
-            let orderTotal = 0
-
-            const orderDishes = await knex("ORDER_DISH as OD")
-                .select(['D.price', 'OD.quantity'])
-                .innerJoin("DISH as D", "D.id", "OD.dish_id")
-                .where({ order_id: orderId })
-
-            orderTotal = orderDishes.reduce((acc, dish) => acc + dish.price * dish.quantity, 0)
-
-
-            if (payment == undefined) {
-                await knex("ORDER").update({
-                    amount: orderTotal,
-                    payment: null
-                }).where({ id: orderId })
-            } else {
-                if (!Object.values(paymentMethod).includes(payment)) {
-                    throw new AppError("Método de pagamento inválido")
-                }
-
-                await knex("ORDER").update({
-                    payment
-                }).where({ id: orderId })
-            }
-
-            return response.status(200).json({ message: "Pedido atualizado com sucesso." });
-
-
+            return response.json(orders);
         } catch (error) {
+
             throw new AppError(error.message, 500);
         }
     }
@@ -188,9 +150,6 @@ class OrderController {
             const orderId = request.params.id;
             const { dishes } = request.body;
 
-            if (!orderId || !dishes || !Array.isArray(dishes) || dishes.length === 0) {
-                return response.status(400).json({ message: "Parâmetros inválidos." });
-            }
 
             const order = await knex("ORDER")
                 .where({
@@ -277,10 +236,7 @@ class OrderController {
                 throw new AppError("Status do pedido inválido")
             }
 
-            await knex("ORDER").where({ id: orderId }).update({
-                status,
-                updated_at: knex.fn.now()
-            })
+            await knex("ORDER").update({ status, updated_at: knex.fn.now() }).where({ id: orderId })
 
             return response.json({ message: "Status atualizado com sucesso." })
 
