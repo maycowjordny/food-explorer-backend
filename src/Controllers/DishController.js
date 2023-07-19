@@ -54,9 +54,9 @@ class DishController {
     }
 
     async delete(request, response) {
-        const { id } = request.params;
-
         try {
+
+            const { id } = request.params;
             await knex("DISH")
                 .where({ id })
                 .delete();
