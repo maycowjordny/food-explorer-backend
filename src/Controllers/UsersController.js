@@ -9,6 +9,11 @@ class UsersController {
         try {
             const { name, email, password } = request.body
 
+            if (password.length < 6) {
+
+                throw new AppError("A senha deve conter no mínimo 6 dígitos")
+            }
+
             const hashedPassword = await bcrypt.hash(password, 12)
 
             const userRepository = new UserRepository()
@@ -40,8 +45,11 @@ class UsersController {
             const { name, email, password, old_password } = request.body
             const id = request.user.id
 
-            const userRepository = new UserRepository()
+            if (password.length < 6) {
 
+                throw new AppError("A senha deve conter no mínimo 6 dígitos")
+            }
+            const userRepository = new UserRepository()
             const user = await knex('USERS').where({ id }).first()
 
 

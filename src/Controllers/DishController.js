@@ -138,7 +138,7 @@ class DishController {
                 .distinct()
                 .whereLike('d.name', `%${name}%`)
                 .orWhereLike('I.name', `%${ingredients}%`)
-                .leftJoin('INGREDIENT as I', 'D.id', 'I.dish_id')
+                .leftJoin('INGREDIENT as I', 'd.id', 'I.dish_id')
                 .leftJoin("FAVORITE as f", function () {
                     this.on("d.id", "=", "f.dish_id")
                         .andOn("f.user_id", "=", userId);
