@@ -2,7 +2,7 @@
 
 * Esse projeto é um cardápio digital para um restaurante fictício, conhecido como foodExplorer.
 
-![Capa do Projeto](src/assets/capa.png)
+![Capa do Projeto](src/assets/capa.jpg)
 
 # 💬Sobre
 
